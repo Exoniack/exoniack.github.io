@@ -1,14 +1,20 @@
-import random
+from flask import Flask, render_template, jsonify
 
-# Génère un nombre aléatoire entre 1 et 10
-nombre_a_deviner = random.randint(1, 10)
+app = Flask(__name__)
 
-# Demande à l'utilisateur de deviner le nombre
-print("Devinez le nombre entre 1 et 10 !")
-essai = int(input("Entrez votre nombre : "))
+# Initialisation de la variable nombre
+number = 0
 
-# Vérifie si l'utilisateur a deviné correctement
-if essai == nombre_a_deviner:
-    print("Bravo ! Vous avez deviné le bon nombre.")
-else:
-    print(f"Dommage ! Le nombre était {nombre_a_deviner}.")
+@app.route('/')
+def index():
+    global number
+    return render_template('index.html', number=number)
+
+@app.route('/increment')
+def increment():
+    global number
+    number += 1
+    return jsonify({'number': number})
+
+if __name__ == '__main__':
+    app.run(debug=True)
