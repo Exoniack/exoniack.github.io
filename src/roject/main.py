@@ -1,30 +1,59 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Dec 22 15:20:45 2023
+
+@author: dchareyr
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.special import erf
+from matplotlib.animation import FuncAnimation
 
-dt = 0.0005
-dy = 0.0005
-k = 10**(-4)
-y_max = 0.04
-t_max = 1
-T0 = 100
 
-def FTCS(dt,dy,t_max,y_max,k,T0):
-    s = k*dt/dy**2
-    y = np.arange(0,y_max+dy,dy)
-    t = np.arange(0,t_max+dt,dt)
-    r = len(t)
-    c = len(y)
-    T = np.zeros([r,c])
-    T[:,0] = T0
-    for n in range(0,r-1):
-        for j in range(1, c-1):
-          T[n+1,j] = T[n,j] + s*(T[n,j-1] - 2*T[n,j] + T[n,j+1])  # as before
-          j = c-1
-          T[n+1, j] = T[n,j] + s*(T[n,j-1] - 2*T[n,j] + T[n,j-1])  # note the last term here
-    return y,T,r,s
+# Initialisation des grandeurs numériques
+D = 1
+Temps = 0.3
+NTemps = 4000
+dt = Temps/NTemps
+t=np.linspace(0,Temps, NTemps)
+L = 10
+NX=400
+dx = L/(NX-1)
+x = np.linspace(-400, 400, NX)
 
-y,T,r,s = FTCS(dt,dy,t_max,y_max,k,T0)
+### MAIN PROGRAM ###
 
-plot_times = np.arange(0.01,1.0,0.01)
-for t in plot_times:
-    plt.plot(y,T[t/dt,:])
+# Initialisation
+xlim=10
+T = 0.5*D*(erf(xlim-x)-erf(-xlim-x))
+
+# Initialisation des variables pour le calcul
+Theta = T[:,np.newaxis]
+MD = np.zeros((NX))
+
+# Résolution de l'équation de diffusion
+for n in range(0,NTemps) :
+
+    MD[1:-1] = dt * D * (T[:-2] - 2 * T[1:-1] + T[2:]) / (dx**2)
+    T += MD
+
+    Theta = np.concatenate([Theta, T[:,np.newaxis]], axis = 1)
+
+
+fig1 = plt.figure(figsize=(8,6))
+# Préparation pour l'animation
+def animate(i):
+    plt.clf()
+    Y = Theta[:,i]
+    plt.plot(x, Y, color = plt.get_cmap('viridis')(float(10*i)/NTemps))
+    plt.xlim(-100, 100)
+    plt.ylim(0,1)
+    plt.title(f"Nombre d'itérations : {i}")
+    plt.xlabel("x (u.a.)")
+    plt.ylabel("T (u.a.)")
+    plt.grid(True)
+
+anim = FuncAnimation(fig1, animate, frames = 2000, interval = 1)
+plt.show()
