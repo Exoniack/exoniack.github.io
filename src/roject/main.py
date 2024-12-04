@@ -33,6 +33,7 @@ T = 0.5*D*(erf(xlim-x)-erf(-xlim-x))
 Theta = T[:,np.newaxis]
 MD = np.zeros((NX))
 
+
 # Résolution de l'équation de diffusion
 for n in range(0,NTemps) :
 
